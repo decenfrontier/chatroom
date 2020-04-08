@@ -12,10 +12,15 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    Widget(QWidget *parent = nullptr);
+    Widget(QWidget *parent,QString name);
     ~Widget();
+    void closeEvent(QCloseEvent *);
 
 private:
     Ui::Widget *ui;
+
+signals:
+    void closeWidget();   // 关闭窗口发送信号
+
 };
 #endif // WIDGET_H

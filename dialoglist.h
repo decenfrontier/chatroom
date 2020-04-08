@@ -3,6 +3,7 @@
 
 #include <QWidget>
 
+
 namespace Ui {
 class DialogList;
 }
@@ -15,8 +16,10 @@ public:
     explicit DialogList(QWidget *parent = nullptr);
     ~DialogList();
 
+
 private:
     Ui::DialogList *ui;
+    QVector<bool> vIsShow;   // 记录每个窗口是否显示
 };
 
 #endif // DIALOGLIST_H
