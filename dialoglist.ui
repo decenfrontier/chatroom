@@ -28,8 +28,26 @@
    </property>
    <item>
     <widget class="QToolBox" name="toolBox">
+     <property name="baseSize">
+      <size>
+       <width>240</width>
+       <height>650</height>
+      </size>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
      <property name="currentIndex">
       <number>0</number>
+     </property>
+     <property name="tabSpacing">
+      <number>3</number>
      </property>
      <widget class="QWidget" name="page">
       <property name="geometry">
@@ -37,7 +55,7 @@
         <x>0</x>
         <y>0</y>
         <width>246</width>
-        <height>670</height>
+        <height>673</height>
        </rect>
       </property>
       <attribute name="label">

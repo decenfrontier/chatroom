@@ -55,6 +55,7 @@ DialogList::DialogList(QWidget *parent) :
             }
             vIsShow[i] = true;
             Widget* chatWnd = new Widget(0,vToolBtn[i]->text());    // 顶层弹出 窗口名字
+            chatWnd->setWindowTitle(vToolBtn[i]->text());
             chatWnd->setWindowIcon(vToolBtn[i]->icon());
             chatWnd->show();
 

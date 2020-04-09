@@ -442,22 +442,9 @@
           <number>2</number>
          </property>
          <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="Btn_Send">
+          <widget class="QLabel" name="Lbl_usrNum">
            <property name="text">
-            <string>发送</string>
+            <string>在线用户:0人</string>
            </property>
           </widget>
          </item>
@@ -475,9 +462,22 @@
           </spacer>
          </item>
          <item>
-          <widget class="QLabel" name="Lbl_usrNum">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="Btn_Send">
            <property name="text">
-            <string>在线用户:0人</string>
+            <string>发送</string>
            </property>
           </widget>
          </item>
