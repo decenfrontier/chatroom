@@ -19,7 +19,8 @@ Widget::Widget(QWidget *parent,QString name)
      * ReuseAddressHint模式, 断线重新连接服务器
      */
     udpSocket->bind(port,QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);  // 绑定端口号
-    //sndMsg(UsrEnter);   // 发送新用户进入
+    // 发送新用户进入
+    sndMsg(UsrEnter);
     // 点击发送按钮发送消息
     connect(ui->Btn_Send,&QPushButton::clicked,[=](){
         sndMsg(Msg);
@@ -69,6 +70,26 @@ void Widget::sndMsg(Widget::MsgType type)
     udpSocket->writeDatagram(array,QHostAddress::Broadcast,port);
 }
 
+void Widget::usrEnter(QString userName)
+{
+    // 更新右侧tableWidget
+    bool isEmpty = ui->usrTblWidget->findItems(userName,Qt::MatchExactly).isEmpty();
+    if(isEmpty)
+    {
+        QTableWidgetItem* usr = new QTableWidgetItem(userName);
+        // 插入项
+        ui->usrTblWidget->insertRow(0);
+        ui->usrTblWidget->setItem(0,0,usr);
+        // 追加聊天记录
+        ui->msgBrowser->setTextColor(Qt::gray);
+        ui->msgBrowser->append(QString("%1 上线了").arg(userName));
+        // 在线人数更新
+        ui->Lbl_usrNum->setText(QString("在线人数: %1人").arg(ui->usrTblWidget->rowCount()));
+        // 把自身信息广播出去
+        sndMsg(UsrEnter);
+    }
+}
+
 QString Widget::getUsrName()
 {
     return uName;
@@ -99,15 +120,21 @@ void Widget::recvMsg()
     // 获取当前时间
     QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh-mm-ss");
     switch (msgType) {
-    case Msg:
+    case Msg:   // 普通聊天
+    {
         stream >> usrName >> msg;   // 从stream中取出 用户名 和 具体内容
         // 追加聊天记录
         ui->msgBrowser->setTextColor(Qt::blue); // 设置聊天框文本颜色
         ui->msgBrowser->append("[" + usrName + "]" + time);
         ui->msgBrowser->append(msg);
+    }
         break;
-    case UsrEnter:
 
+    case UsrEnter:  // 用户进入
+    {
+        stream >> usrName;  // 从stream中取出 用户名
+        usrEnter(usrName);
+    }
         break;
 
     case UsrLeft:
