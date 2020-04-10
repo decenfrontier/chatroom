@@ -27,7 +27,7 @@ public:
     enum MsgType {Msg,UsrEnter,UsrLeft};
     void sndMsg(MsgType type); // 广播UDP消息
     void usrEnter(QString userName);    // 处理新用户加入
-    void usrLeft(QString userName);     // 处理用户离开
+    void usrLeft(QString userName,QString time);     // 处理用户离开
     QString getUsrName();   // 获取用户名
     QString getMsg();       // 获取聊天信息
 private:

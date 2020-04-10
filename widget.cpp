@@ -13,7 +13,7 @@ Widget::Widget(QWidget *parent,QString name)
     // 初始化操作
     udpSocket = new QUdpSocket(this);   // 套接字
     uName = name;   // 用户名
-    port = 9999;    // 端口号
+    port = 9999;    // 端口号,所有聊天窗口使用同一端口
     /*
      * ShareAddress模式, 允许不同的服务连接到相同的地址和端口,常用于多客户端监听同一个服务器端口
      * ReuseAddressHint模式, 断线重新连接服务器
@@ -27,6 +27,10 @@ Widget::Widget(QWidget *parent,QString name)
     });
     // 监听别人发送的数据
     connect(udpSocket,&QUdpSocket::readyRead,this,&Widget::recvMsg);
+    // 点击退出按钮关闭群聊窗口
+    connect(ui->Btn_Exit,&QPushButton::clicked,[=](){
+        close();
+    });
 }
 
 Widget::~Widget()
@@ -37,6 +41,10 @@ Widget::~Widget()
 void Widget::closeEvent(QCloseEvent*)
 {
     emit closeWidget();
+    sndMsg(UsrLeft);
+    // 断开套接字
+    udpSocket->close();
+    udpSocket->destroyed();
 }
 
 void Widget::sndMsg(Widget::MsgType type)
@@ -72,13 +80,12 @@ void Widget::sndMsg(Widget::MsgType type)
 
 void Widget::usrEnter(QString userName)
 {
-    // 更新右侧tableWidget
     bool isEmpty = ui->usrTblWidget->findItems(userName,Qt::MatchExactly).isEmpty();
     if(isEmpty)
     {
+        // 更新右侧tableWidget
         QTableWidgetItem* usr = new QTableWidgetItem(userName);
-        // 插入项
-        ui->usrTblWidget->insertRow(0);
+        ui->usrTblWidget->insertRow(0); // 插入项
         ui->usrTblWidget->setItem(0,0,usr);
         // 追加聊天记录
         ui->msgBrowser->setTextColor(Qt::gray);
@@ -87,6 +94,22 @@ void Widget::usrEnter(QString userName)
         ui->Lbl_usrNum->setText(QString("在线人数: %1人").arg(ui->usrTblWidget->rowCount()));
         // 把自身信息广播出去
         sndMsg(UsrEnter);
+    }
+}
+
+void Widget::usrLeft(QString userName,QString time)
+{
+    bool isEmpty = ui->usrTblWidget->findItems(userName,Qt::MatchExactly).isEmpty();
+    if(!isEmpty)
+    {
+        // 更新右侧tableWidget
+        int row = ui->usrTblWidget->findItems(userName,Qt::MatchExactly).first()->row();
+        ui->usrTblWidget->removeRow(row);
+        // 追加聊天记录
+        ui->msgBrowser->setTextColor(Qt::gray);
+        ui->msgBrowser->append(userName + "于" + time + "退出了群聊");
+        // 在线人数更新
+        ui->Lbl_usrNum->setText(QString("在线人数:%1人").arg(ui->usrTblWidget->rowCount()));
     }
 }
 
@@ -118,7 +141,7 @@ void Widget::recvMsg()
     QString msg;
     stream >> msgType;  // 从stream中取出 类型
     // 获取当前时间
-    QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh-mm-ss");
+    QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
     switch (msgType) {
     case Msg:   // 普通聊天
     {
@@ -137,8 +160,11 @@ void Widget::recvMsg()
     }
         break;
 
-    case UsrLeft:
-
+    case UsrLeft:   // 用户离开
+    {
+        stream >> usrName;  // 从stream中取出 用户名
+        usrLeft(usrName,time);
+    }
         break;
     default:
         break;
