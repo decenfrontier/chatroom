@@ -3,6 +3,10 @@
 #include <QDataStream>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QColorDialog>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
 
 Widget::Widget(QWidget *parent,QString name)
     : QWidget(parent)
@@ -24,12 +28,69 @@ Widget::Widget(QWidget *parent,QString name)
     // 点击发送按钮发送消息
     connect(ui->Btn_Send,&QPushButton::clicked,[=](){
         sndMsg(Msg);
+        ui->msgTxtEdit->setFocus();
     });
     // 监听别人发送的数据
     connect(udpSocket,&QUdpSocket::readyRead,this,&Widget::recvMsg);
     // 点击退出按钮关闭群聊窗口
     connect(ui->Btn_Exit,&QPushButton::clicked,[=](){
         close();
+    });
+
+    //----------------------辅助功能------------------------//
+    // 字体
+    connect(ui->Cmb_font,&QFontComboBox::currentFontChanged,[=](const QFont &font){
+        ui->msgTxtEdit->setCurrentFont(font);
+        ui->msgTxtEdit->setFocus();
+    });
+    // 字号
+    void (QComboBox::*pF)(const QString &) = &QComboBox::currentIndexChanged;
+    connect(ui->Cmb_Size,pF,[=](const QString &text){
+        ui->msgTxtEdit->setFontPointSize(text.toDouble());
+        ui->msgTxtEdit->setFocus();
+    });
+    // 加粗
+    connect(ui->TBtn_Bold,&QToolButton::clicked,[=](bool isCheck){
+        if(isCheck)
+            ui->msgTxtEdit->setFontWeight(QFont::Bold);
+        else
+            ui->msgTxtEdit->setFontWeight(QFont::Normal);
+    });
+    // 倾斜
+    connect(ui->TBtn_italic,&QToolButton::clicked,[=](bool isCheck){
+        ui->msgTxtEdit->setFontItalic(isCheck);
+    });
+    // 下划线
+    connect(ui->TBtn_UnderLine,&QToolButton::clicked,[=](bool isCheck){
+        ui->msgTxtEdit->setFontUnderline(isCheck);
+    });
+    // 字体颜色
+    connect(ui->TBtn_Color,&QToolButton::clicked,[=](){
+        QColor color = QColorDialog::getColor(Qt::black); // 设置默认为黑色
+        ui->msgTxtEdit->setTextColor(color);
+    });
+    // 清空聊天记录
+    connect(ui->TBtn_Clear,&QToolButton::clicked,[=](){
+        ui->msgBrowser->clear();
+    });
+    // 保存聊天记录
+    connect(ui->TBtn_Save,&QToolButton::clicked,[=](){
+        if(ui->msgBrowser->document()->isEmpty())
+        {
+            QMessageBox::warning(this,"警告","内容不能为空");
+            return;
+        }
+        QString path = QFileDialog::getSaveFileName(this,"请选择保存聊天记录的位置","保存的文件名","*.txt");
+        if(path.isEmpty())
+        {
+            QMessageBox::warning(this,"警告","路径不能为空");
+            return;
+        }
+        QFile file(path);
+        file.open(QIODevice::WriteOnly | QIODevice::Text);  // 打开模式设置为 只写 和 换行
+        QTextStream stream(&file);
+        stream << ui->msgBrowser->toPlainText();
+        file.close();
     });
 }
 
